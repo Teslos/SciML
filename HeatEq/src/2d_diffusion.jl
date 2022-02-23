@@ -1,7 +1,7 @@
 # 2D diffusion problem
 
 # Packages and inclusions
-using ModelingToolkit,DiffEqOperators,LinearAlgebra,Test,OrdinaryDiffEq, DomainSets
+using ModelingToolkit, MethodOfLines, DiffEqOperators,LinearAlgebra,Test,OrdinaryDiffEq, DomainSets
 using ModelingToolkit: Differential
 
 
@@ -41,7 +41,7 @@ domains = [
 ]
 
 # Space and time domains
-pdesys = PDESystem([eq], bcs, domains, [t, x, y], [u(t, x, y)])
+@named pdesys = PDESystem([eq], bcs, domains, [t, x, y], [u(t, x, y)])
 
 dx = 0.1;
 dy = 0.2;
@@ -63,7 +63,7 @@ asf = reshape(
 # Method of lines discretization
 order = 2
 discretization =
-    MOLFiniteDifference([x => dx, y => dy], t; centered_order = order)
+    MOLFiniteDifference([x => dx, y => dy], t; approx_order = order)
 prob = ModelingToolkit.discretize(pdesys, discretization)
 
 # Solution of the ODE system

@@ -3,9 +3,9 @@
 # uₜ = Dk*uₓₓ + Dk*u_yy + S
 
 # Packages and inclusions
-using ModelingToolkit,DiffEqOperators,LinearAlgebra,Test,OrdinaryDiffEq, DomainSets
+using ModelingToolkit, MethodOfLines, DiffEqOperators,LinearAlgebra,Test,OrdinaryDiffEq, DomainSets
 using ModelingToolkit: Differential
-ρ = 7860; Cₚ = 624; k = 30.1
+ρ = 7860; Cp = 624; k = 30.1
 γ = 2.5e+4; P = 1e+2; r₀ = 0.025
 S(t,x,y) = 2P/(π*r₀^2)*exp(-2/(r₀^2)*((x-t*0.02)^2 + (y-y_max/2)^2))
 delta_funct(x,y,a,b) = exp(-(x/a)^2-(y/b)^2)/(a*b*sqrt(π))
@@ -46,7 +46,7 @@ domains = [
 ]
 
 # Space and time domains
-pdesys = PDESystem([eq], bcs, domains, [t, x, y], [u(t, x, y)], [Dk=>k/(ρ*Cₚ)])
+@named pdesys = PDESystem([eq], bcs, domains, [t, x, y], [u(t, x, y)], [Dk => k/(ρ*Cp)])
 
 dx = (x_max-x_min)/50;
 dy = (y_max-y_min)/50;
@@ -54,7 +54,7 @@ dy = (y_max-y_min)/50;
 # Method of lines discretization
 order = 2
 discretization =
-    MOLFiniteDifference([x => dx, y => dy], t; centered_order = order)
+    MOLFiniteDifference([x => dx, y => dy], t; approx_order = order)
 prob = ModelingToolkit.discretize(pdesys, discretization)
 
 # Solution of the ODE system
