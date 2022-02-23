@@ -1,5 +1,6 @@
 using DifferentialEquations
 using Plots
+
 function lotka_voltera(du,u,p,t)
     🐰,🐺=u
     α,β,γ,δ = p
