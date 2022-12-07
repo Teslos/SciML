@@ -1,0 +1,5 @@
+[deps]
+DataDrivenDiffEq = "2445eb08-9709-466a-b3fc-47e12bd697a2"
+DataDrivenSparse = "5b588203-7d8b-4fab-a537-c31a7f73f46b"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
