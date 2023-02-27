@@ -85,8 +85,8 @@ end
 #Plot
 using Plots
 plot(sol1[:,4])
-    #savefig("MOL_Linear_Diffusion_2D_Test00.png")
+#savefig("MOL_Linear_Diffusion_2D_Test00.png")
 plot!(asf[:,5])
 plot(analytic_sol_func.(2.,0.,r_space_y))
-heatmap(sol1)
+heatmap(sol.u[end][1:19,1:10])
 heatmap(asf[1:19,1:10])

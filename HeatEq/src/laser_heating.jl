@@ -84,7 +84,7 @@ anim = @animate for i = 1 : length(times)
     u_sol = reshape(sol.u[i], (length(xs)-2,length(ys)-1))
     heatmap(u_sol)
 end
-
+sol.u
 gif(anim,"laser_heating.gif",fps=20)
 plot(u_sol[:,21])
 minimum(u_sol[:,21])
