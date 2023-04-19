@@ -30,3 +30,8 @@ function G(p)
 end
 res2 = ForwardDiff.gradient(G, p)
 res3 = Calculus.gradient(G, p)
+#res2[4] = 1.0
+optprob = ODEProblem(lotka_volterra,[1.0;1.0],(0.0,10.0),res2)
+solopt = solve(optprob,DP8())
+using Plots
+plot(solopt,vars=(2))
