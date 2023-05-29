@@ -59,7 +59,7 @@ optprob = Optimization.OptimizationProblem(optf,pinit)
 using OptimizationOptimisers
 opt = ADAM(0.05)
 result_neuralode = Optimization.solve(optprob,
-                                    Optim.BFGS(),
+                                    OptimizationOptimisers.Adam(0.01),
                                     callback = callback,
                                     maxiters = 200)
 
