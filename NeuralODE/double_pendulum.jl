@@ -3,7 +3,7 @@ using OrdinaryDiffEq, Plots
 
 # constants and setup
 const m₁, m₂, L₁, L₂ = 1,2,1,2
-
+const g = 9.81
 initial = [0, π/3, 0, 3π/5]
 tspan = (0.,50.)
 
