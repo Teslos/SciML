@@ -3,7 +3,7 @@ using DiffEqPhysics
 
 using Plots
 
-q0 = [0.,0.1]; p0=[0.5,0]
+p0 = [0.,0.1]; q0=[0.5,0]
 tspan = (0.,100.)
 
 # Total energy of the system is consists
@@ -24,7 +24,7 @@ end
 dt = 0.1
 #Pass to solvers
 prob = HamiltonianProblem(Henon_Heiles, p0, q0, tspan, param)
-integrator = init(prob, Vern9(), abs_tol = 1e-16, rel_tol = 1e-16)
+integrator = init(prob, Tsit5(), abs_tol = 1e-16, rel_tol = 1e-16)
 for _ in 1:1000
     step!(integrator, dt, true)
 end
