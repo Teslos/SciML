@@ -13,13 +13,18 @@ p0 = [0.0 0.0 0.0;
       0.0 0.0 0.0; 
       0.0 0.0 0.0]
 
-q0 = [0.2 0.0 0.0; 
-      0.0 0.0 0.0; 
+q0 = [1.0 0.0 0.0; 
+      0.0 1.0 0.0; 
       0.0 0.0 0.0; 
       0.0 0.0 0.0; 
       0.0 0.0 0.0; 
       0.0 0.0 0.0; 
       0.0 0.0 0.0]
+
+# this tediously define the neigh. in the hexagonal mesh in 3-directions.
+Σ₁ = [(4,7),(7,1)]
+Σ₂ = [(5,7),(7,2)]
+Σ₃ = [(6,7),(7,3)]
 
 positions = [1.0 0.0 0.0; 
              0.0 1.0 0.0; 
@@ -51,8 +56,26 @@ function V(σ₁, σ₂, σ₃)
     return v
 end
 
+function Vn(σ₁, σ₂, σ₃)
+    v = 0.0; α = 0.25
+    for (i,j) in Σ₁
+        v += α/3 * (σ₁[j]-σ₁[i])^3
+        v += 1/2 * (σ₁[j]-σ₁[i])^2
+    end
+
+    for (i,j) in Σ₂
+        v += α/3 * (σ₂[j]-σ₂[i])^3
+        v += 1/2 * (σ₂[j]-σ₂[i])^2
+    end
+ 
+    for (i,j) in Σ₃
+        v += α/3 * (σ₃[j]-σ₃[i])^3
+        v += 1/2 * (σ₃[j]-σ₃[i])^2
+    end
+    return v
+end
 T(pσ₁, pσ₂, pσ₃) = 1//2 * sum(pσ₁ .^2 + pσ₂ .^2 + pσ₃ .^2)
-E(σ₁,σ₂,σ₃,pσ₁,pσ₂,pσ₃) = T(pσ₁,pσ₂,pσ₃) + V(σ₁,σ₂,σ₃)
+E(σ₁,σ₂,σ₃,pσ₁,pσ₂,pσ₃) = T(pσ₁,pσ₂,pσ₃) + Vn(σ₁,σ₂,σ₃)
 # define the function for hexagonal lattice
 function hexagonal2d(p,q,param,t)
     σ₁ = q[:,1]
@@ -105,9 +128,12 @@ function make_pretty_gif(sol)
         str = string("Time = ", round(timepoints[i],digits=1), " sec")
         # convert triangular system to x, y coordinates
         xy = hextoxy.(eachrow(sol.u[i].x[2]+x0))
-        plot(xy, size=(400,300), xlim=(-axis_lim,axis_lim), ylim=(-axis_lim,axis_lim), markersize = 10, markershape = :circle,label ="",axis = [])
+        plot(xy, size=(400,300), xlim=(-axis_lim,axis_lim), ylim=(-axis_lim,axis_lim), markersize = 10, markershape = :circle,label ="",axis = [],
+             title = str, title_location = :left)
      
         frame(anim)
     end
     gif(anim, fps = 30)
 end
+
+make_pretty_gif(integrator.sol)

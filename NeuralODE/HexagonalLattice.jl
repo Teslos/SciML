@@ -4,7 +4,7 @@ using ComponentArrays
 
 # Parameters
 α = 1.0
-β = 0.1
+β = 0.0
 γ = 1.0
 d = 0.0
 ω = 1.0
@@ -16,9 +16,13 @@ du0 = [0.0 0.0 0.0; 0.0 0.0 0.0; 0.0 0.0 0.0; 0.0 0.0 0.0; 0.0 0.0 0.0; 0.0 0.0 
 # positions of the masses (σ1, σ2, σ3)
 x0 = [1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0; -1.0 0.0 0.0; 0.0 -1.0 0.0; 0.0 0.0 -1.0; 0.0 0.0 0.0]
 
+uc0 =[0.0 0.1; 0.0 0.0 ; 0.0 0.0 ; 0.0 0.0 ; 0.0 0.0 ; 0.0 0.0 ; 0.0 0.0]
+duc0 = [0.0 0.0 ; 0.0 0.0 ; 0.0 0.0 ; 0.0 0.0 ; 0.0 0.0 ; 0.0 0.0  ; 0.0 0.0 ]
 
+# positions of the masses (x,y)
+xc0 = [0.0 1.0; -√3/2 -0.5 ; √3/2 -0.5 ; 0 -1.0; √3/2 0.5 ;  -√3/2 0.5 ; 0.0 0.0 ]
 #define the problem
-function hexagonal_harmonic(ddu, du, u, param, t)
+function hexagonal_duffing(ddu, du, u, param, t)
     α, β, d, ω = param
     ddu[1,1] = -α * (u[1,1] - u[7,1]) -β*(u[1,1] - u[7,1])^3 + d*cos(ω * t)
     ddu[2,2] = -α * (u[2,2] - u[7,2]) -β*(u[2,2] - u[7,2])^3 + d*cos(ω * t)
@@ -38,13 +42,48 @@ function hexagonal_harmonic(ddu, du, u, param, t)
     return ddu
 end
 
+# define hexagonal lattice in cartesian coordinates
+# all equations are explicitly written out.
+function hexagonal_duffing_cart(ddu, du, u, param, t)
+    α, β, d, ω = param
+   
+    #ddu[1,1] = -α * (u[1,1] - u[7,1]) -β*(u[1,1]-u[7,1])^3 + d*cos(ω * t)
+    ddu[1,1] = 0.0
+    ddu[1,2] = -α * (u[1,2] - u[7,2]) -β*(u[1,2]-u[7,2])^3 + d*cos(ω * t)
+
+    ddu[2,1] = √3/2*(-α * (u[2,1] - u[7,2]) -β*(u[2,1]-u[7,1])^3) + d*cos(ω * t)
+    ddu[2,2] =  1/2*(-α * (u[2,2] - u[7,2]) -β*(u[2,2]-u[7,2])^3) + d*cos(ω * t)
+
+    ddu[3,1] = -√3/2*(-α * (u[3,1] - u[7,1]) -β*(u[3,1]-u[7,1])^3) + d*cos(ω * t)
+    ddu[3,2] =   1/2*(-α * (u[3,2] - u[7,2]) -β*(u[3,2]-u[7,2])^3) + d*cos(ω * t)
+
+    #ddu[4,1] = -α * (u[4,1] - u[7,1]) -β*(u[4,1]-u[7,1])^3 + d*cos(ω * t)
+    ddu[4,1] = 0.0
+    ddu[4,2] = -α * (u[4,2] - u[7,2]) -β*(u[4,2]-u[7,2])^3 + d*cos(ω * t)
+
+    ddu[5,1] = -√3/2*(-α * (u[5,1] - u[7,1]) -β*(u[5,1]-u[7,1])^3) + d*cos(ω * t)
+    ddu[5,2] =  -1/2*(-α * (u[5,2] - u[7,2]) -β*(u[5,2]-u[7,2])^3) + d*cos(ω * t)
+
+    ddu[6,1] = √3/2*(-α * (u[6,1] - u[7,1]) -β*(u[6,1]-u[7,1])^3) + d*cos(ω * t)
+    ddu[6,2] = -1/2*(-α * (u[6,2] - u[7,2]) -β*(u[6,2]-u[7,2])^3) + d*cos(ω * t)
+
+    ddu[7,1] = #= -α * (u[7,1] - u[1,1]) -α * (u[7,1] - u[4,1]) =#  -α * -√3/2 * (u[7,1] - u[2,1])
+               -α * √3/2*(u[7,1] - u[5,1]) -α * √3/2* (u[7,1] - u[3,1]) -α * -√3/2*(u[7,1] - u[6,1])
+    ddu[7,1] += #= -β * (u[7,1] - u[1,1])^3 -β * (u[7,1] - u[4,1])^3 =# -β * -√3/2 * (u[7,1] - u[2,1])^3
+                -β * √3/2*(u[7,1] - u[5,1])^3 -β * √3/2 * (u[7,1] - u[3,1])^3 -β * -√3/2* (u[7,1] - u[6,1])^3   
+                +d*cos(ω * t)        
+    ddu[7,2] = -α * (u[7,2] - u[1,2]) -α * (u[7,2] - u[4,2]) -α * -1/2*(u[7,2] - u[2,2])
+               -α * 1/2*(u[7,2] - u[5,2]) -α * -1/2* (u[7,2] - u[3,2]) -α * 1/2*(u[7,2] - u[6,2])
+    ddu[7,2] += -β * (u[7,2] - u[1,2])^3 -β * (u[7,2] - u[4,2])^3 -β * -1/2*(u[7,2] - u[2,2])^3
+                -β * 1/2*(u[7,2] - u[5,2])^3 -β * -1/2*(u[7,2] - u[3,2])^3 -β * 1/2*(u[7,2] - u[6,2])^3   
+                 +d*cos(ω * t)    
+
+end
+
 #pass to solvers
 p = (α, β, d, ω)
-prob = SecondOrderODEProblem(hexagonal_harmonic, du0, u0, tspan, p)
-sol = solve(prob, DPRKN6(), saveat = t)
-
-
-
+prob = SecondOrderODEProblem(hexagonal_duffing_cart, duc0, uc0, tspan, p)
+sol = solve(prob, Tsit5(), saveat = t)
 
 struct Orientation
     f0::Float64
@@ -94,8 +133,11 @@ function make_pretty_gif(sol)
     for i =1:length(timepoints)
         str = string("Time = ", round(timepoints[i],digits=1), " sec")
         # convert triangular system to x, y coordinates
-        xy = hextoxy.(eachrow(sol.u[i].x[2]+x0))
-        plot(xy, size=(400,300), xlim=(-axis_lim,axis_lim), ylim=(-axis_lim,axis_lim), markersize = 10, markershape = :circle,label ="",axis = [])
+        #xy = hextoxy.(eachrow(sol.u[i].x[2]+x0))
+        xy = sol.u[i].x[2]+xc0
+        println(maximum(xy))
+        plot(xy[:,1],xy[:,2], size=(400,300), xlim=(-axis_lim,axis_lim), ylim=(-axis_lim,axis_lim), markersize = 10, 
+            markershape = :circle,label ="",axis = [], title = str, title_location = :left)
         # for j = 2:7
         #  x,y = hextoxy(v)    
         #  plot!([x], [y], markersize = 10, markershape = :circle,label ="",title = str, title_location = :left)
