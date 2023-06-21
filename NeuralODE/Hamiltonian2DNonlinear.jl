@@ -4,11 +4,19 @@ using DiffEqPhysics
 using Plots
 
 # initial conditions for the 2d lattice oscillators
-p0 = [0.0 0.1 ; 0.0 0.0; 0. 0.0; 0. 0.0; 0. 0.0; 0. 0.0; 0. 0.0; 0. 0.0;0. 0.0]
-q0=  [0.5 0; 0.0 0.0;  0  0;0 0; 0 0; 0 0;0 0;0 0;0 0]
+p0 = [0.0 0.0 ; 0.0 0.0; 0. 0.0; 0. 0.0; 0. 0.0; 0. 0.0; 0. 0.0; 0. 0.0;0. 0.0]
+q0=  [-0.5 0.5; 0.0 0.0;  0  0;0.0 0; 0 0.0 ; 0 0;0.0 0;0 0;0 0]
 positions = [0.0 0; 1.0 0.0; 2  0;0 1;1 1; 2 1;0 2;1 2;2 2]
 tspan = (0.,100.)
-
+Σ = [0 1 0 1 0 0 0 0 0; 
+     1 0 1 0 1 0 0 0 0; 
+     0 1 0 0 0 1 0 0 0;
+     1 0 0 0 1 0 1 0 0; 
+     0 1 0 1 0 1 0 1 0; 
+     0 0 1 0 1 0 0 0 1; 
+     0 0 0 1 0 0 0 1 0; 
+     0 0 0 0 1 0 1 0 1; 
+     0 0 0 0 0 1 0 1 0]
 # Total energy of the system is consists
 # this is potential energy
 function V(x, y)
@@ -24,10 +32,28 @@ function V(x, y)
     return v
 end
 
+function Vn(x,y)
+    v = 0.0; alpha=0.25
+    n, m = size(Σ)
+    # loop over the lattice
+    for i=1:n
+        # find the neighbors
+        for j=1:m
+            if Σ[i,j] == 1
+                v += alpha/3 * (x[i] - x[j])^3
+                v += 1/2 * (x[i] - x[j])^2
+                v += alpha/3 * (y[i] - y[j])^3
+                v += 1/2 * (y[i] - y[j])^2
+            end
+        end
+    end
+    return v
+end
+
 T(px,py) = 1//2 * sum(px.^2 + py.^2)
 
 
-E(x,y,px,py) = V(x,y)+T(px,py)
+E(x,y,px,py) = Vn(x,y)+T(px,py)
 
 # define the function
 function lattice2d(p,q,param,t)
@@ -43,7 +69,7 @@ end
 dt = 0.1
 #Pass to solvers
 prob = HamiltonianProblem(lattice2d, p0, q0, tspan, param=nothing)
-integrator = init(prob, Tsit5(), abs_tol = 1e-16, rel_tol = 1e-16)
+integrator = init(prob, Tsit5())
 for _ in 1:1000
     step!(integrator, dt, true)
 end
@@ -82,19 +108,12 @@ function make_pretty_gif(sol)
 
     anim = Animation()
     for i =1:length(timepoints)
+        xy = sol[i].x[2]
         str = string("Time = ", round(timepoints[i],digits=1), " sec")
-        plot([x[1][i]+positions[1,1]], [y[1][i]+positions[1,2]], size=(400,300), xlim=(-axis_lim,axis_lim), ylim=(-axis_lim,axis_lim), markersize = 10, markershape = :circle,label ="",axis = [])
+        plot([xy[1,1]+positions[1,1]], [xy[1,2]+positions[1,2]], size=(400,300), xlim=(-axis_lim,axis_lim), ylim=(-axis_lim,axis_lim), markersize = 10, markershape = :circle,label ="1",axis = [])
         for j = 2:9 
-         plot!([x[j][i]+positions[j,1]], [y[j][i]+positions[j,2]], markersize = 10, markershape = :circle,label ="",title = str, title_location = :left)
+         plot!([xy[j,1]+positions[j,1]], [xy[j,2]+positions[j,2]], markersize = 10, markershape = :circle,label ="$j",title = str, title_location = :left)
         end
-        #= if i > 8 #rainbow trail
-            plot!([x2[i-2:i]],   [y2[i-2:i]],  alpha = 0.15, linewidth = 2, color = :red, label=nothing)
-            plot!([x2[i-3:i-2]], [y2[i-3:i-2]],alpha = 0.15, linewidth = 2, color = :orange, label=nothing)
-            plot!([x2[i-4:i-3]], [y2[i-4:i-3]],alpha = 0.15, linewidth = 2, color = :yellow, label=nothing)
-            plot!([x2[i-6:i-4]], [y2[i-6:i-4]],alpha = 0.15, linewidth = 2, color = :green, label=nothing)
-            plot!([x2[i-7:i-6]], [y2[i-7:i-6]],alpha = 0.15, linewidth = 2, color = :blue, label=nothing)
-            plot!([x2[i-8:i-7]], [y2[i-8:i-7]],alpha = 0.15, linewidth = 2, color = :purple, label=nothing)
-        end =#
         frame(anim)
     end
     gif(anim, fps = 30)
