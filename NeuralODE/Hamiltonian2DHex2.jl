@@ -5,21 +5,21 @@ using DiffEqPhysics
 using Plots
 
 # initial conditions for the 2d hexagonal oscillators
-p0 = [0.0 0.0 0.0; 
-      0.0 0.0 0.0; 
-      0.0 0.0 0.0; 
-      0.0 0.0 0.0; 
-      0.0 0.0 0.0; 
-      0.0 0.0 0.0; 
-      0.0 0.0 0.0]
+p0 = [0.0 0.0 ; 
+      0.0 0.0 ; 
+      0.0 0.0 ; 
+      0.0 0.0 ; 
+      0.0 0.0 ; 
+      0.0 0.0 ; 
+      0.0 0.0 ]
 
-q0 = [1.0 0.0 0.0; 
-      0.0 0.0 0.0; 
-      0.0 0.0 0.0; 
-      0.0 0.0 0.0; 
-      0.0 0.0 0.0; 
-      0.0 0.0 0.0; 
-      0.0 0.0 0.0]
+q0 = [0.0 0.0 ; 
+      0.0 1.0 ; 
+      0.0 0.0 ; 
+      0.0 0.0 ; 
+      0.0 0.0 ; 
+      0.0 0.0 ; 
+      0.0 0.0 ]
 
 # this tediously define the neigh. in the hexagonal mesh in 3-directions.
 Σ = [0 0 0 0 0 0 1;
@@ -29,14 +29,14 @@ q0 = [1.0 0.0 0.0;
      0 0 0 0 0 0 1;
      0 0 0 0 0 0 1;
      1 1 1 1 1 1 0;]
-
-positions = [1.0 0.0 0.0; 
-             0.0 1.0 0.0; 
-             0.0 0.0 1.0; 
-             -1.0 0.0 0.0; 
-             0.0 -1.0 0.0; 
-             0.0 0.0 -1.0; 
-             0.0 0.0 0.0]
+# positions of the oscillators
+positions = [1.0 0.0 ; 
+             0.0 1.0 ; 
+            -1.0 -1.0 ; 
+            -1.0 0.0; 
+             0.0 -1.0; 
+             1.0 1.0 ; 
+             0.0 0.0 ]
 
 tspan = (0.0,100.0)
 
@@ -60,9 +60,10 @@ function V(σ₁, σ₂, σ₃)
     return v
 end
 
-function Vn(σ₁, σ₂, σ₃)
+function Vn(σ₁, σ₂)
     v = 0.0; α = 0.25
     n, m = size(Σ)
+    σ₃ = -(σ₁ .+ σ₂)  # this is the third component of the vector
     for i=1:n
         for j=1:m
             if Σ[i,j] == 1
@@ -78,18 +79,16 @@ function Vn(σ₁, σ₂, σ₃)
     return v
 end
 
-T(pσ₁, pσ₂, pσ₃) = 1//2 * sum(pσ₁ .^2 + pσ₂ .^2 + pσ₃ .^2)
-E(σ₁,σ₂,σ₃,pσ₁,pσ₂,pσ₃) = T(pσ₁,pσ₂,pσ₃) + Vn(σ₁,σ₂,σ₃)
+T(pσ₁, pσ₂) = 1//2 * sum(pσ₁ .^2 + pσ₂ .^2)
+E(σ₁,σ₂,pσ₁,pσ₂) = T(pσ₁,pσ₂) + Vn(σ₁,σ₂)
 # define the function for hexagonal lattice
 function hexagonal2d(p,q,param,t)
     σ₁ = q[:,1]
     σ₂ = q[:,2]
-    σ₃ = q[:,3]
     
     dσ₁ = p[:,1]
     dσ₂ = p[:,2]
-    dσ₃ = p[:,3]
-    h = E(σ₁,σ₂,σ₃,dσ₁,dσ₂,dσ₃)
+    h = E(σ₁,σ₂,dσ₁,dσ₂)
     return h 
 end
 
@@ -108,8 +107,8 @@ plot(integrator.sol.t, integrator.sol.u[1:2, :], title="The position of oscillat
 
 function hextoxy(h)
     origin = (0.0,0.0)
-    y = h[1] - h[2] * cos(π/3) - h[3] * cos(π/3)
-    x = h[3] * cos(π/6) - h[2] * cos(π/6)
+    y = h[1] - h[2] * sin(π/6) 
+    x = - h[2] * cos(π/6)
     return (x,y)
 end
 
