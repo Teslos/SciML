@@ -60,5 +60,21 @@ basis = get_basis(res)
 p = get_parameter_map(basis)
 odes = get_results(res)
 # try to solve the problem with found basis
-prob2 = ODEProblem(basis, u0, tspan, p)
-sol2 = solve(prob2, Tsit5(), dt=0.1, saveat=0.1)
+prob2 = ODEProblem(basis, u0, tspan)
+# sol2 = solve(prob2, Tsit5(), dt=0.1, saveat=0.1)
+
+t = Symbolics.unwrap(get_iv(basis))
+
+# create the system of equations from the basis
+eqs = map(equations(basis)) do eq  
+    eq.lhs ~ eq.rhs
+end
+
+@named sys = ODESystem(eqs, get_iv(basis), states(basis), parameters(basis))
+
+x0 = [u[1] => u0[1], u[2] => u0[2]]
+ps = get_parameter_map(basis)
+
+ode_prob = ODEProblem(sys, x0, tspan, ps)
+estimate = solve(ode_prob, Tsit5(), dt=0.1, saveat= prob.t)
+scatter!(estimate, vars=(1,2), label="estimate", makerkersize = 2.0, color = :red)
