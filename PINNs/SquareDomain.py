@@ -39,7 +39,6 @@ class SquareDomain:
             val_0 = np.delete(self.extrema_values, i, 0)[:, 0]
             val_f = np.delete(self.extrema_values, i, 0)[:, 1]
             x_boundary_0 = generator_points(n_boundary, self.input_dimensions, random_seed, "sobol", True)
-            print("shape x_boundary_0", x_boundary_0.shape) 
 
             x_boundary_0[:, i] = torch.full(size=(n_boundary,), fill_value=0.0)
             x_boundary_0_wo_i = np.delete(x_boundary_0, i, 1)
